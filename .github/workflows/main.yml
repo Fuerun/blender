@@ -1,0 +1,41 @@
+name=.github/workflows/android-build.yml
+name: Android CI - Build APK
+
+on:
+  push:
+    branches: [ "android/example-app-ci" ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Set up Android SDK & NDK
+        uses: r0adkll/setup-android@v2
+        with:
+          api-levels: "31"
+          ndk: "21.4.7075529"
+          build-tools: "31.0.0"
+
+      - name: Build (Gradle)
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: '7.4.2'
+          arguments: 'assembleDebug'
+          working-directory: 'android/example-app'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-app-apk
+          path: android/example-app/app/build/outputs/apk/debug/app-debug.apk
